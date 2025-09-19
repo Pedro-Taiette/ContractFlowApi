@@ -1,0 +1,6 @@
+@ContractFlowApi_HostAddress = http://localhost:5222
+
+GET {{ContractFlowApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
