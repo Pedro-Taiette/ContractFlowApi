@@ -25,6 +25,7 @@ public class ContractService
     {
         var supplier = await _db.Suppliers.FirstOrDefaultAsync(s => s.Id == request.SupplierId, ct);
         if (supplier is null) throw new ArgumentException("Supplier not found");
+
         var orgUnit = await _db.OrgUnits.FirstOrDefaultAsync(o => o.Id == request.OrgUnitId, ct);
         if (orgUnit is null) throw new ArgumentException("OrgUnit not found");
 
@@ -60,6 +61,7 @@ public class ContractService
                 .ThenInclude(o => o.NonCompliances)
                     .ThenInclude(nc => nc.Penalty)
             .FirstOrDefaultAsync(c => c.Id == id, ct);
+
         if (contract is null) return null;
 
         var dto = new ContractDetailsDto
@@ -92,6 +94,7 @@ public class ContractService
                 DueDate = o.DueDate,
                 Status = o.Status
             };
+
             foreach (var d in o.Deliverables)
             {
                 oDto.Deliverables.Add(new DeliverableDto
@@ -103,6 +106,7 @@ public class ContractService
                     DeliveredAt = d.DeliveredAt
                 });
             }
+
             foreach (var nc in o.NonCompliances)
             {
                 var ncDto = new NonComplianceDto
@@ -112,6 +116,7 @@ public class ContractService
                     Severity = nc.Severity,
                     RegisteredAt = nc.RegisteredAt
                 };
+
                 if (nc.Penalty != null)
                 {
                     ncDto.Penalty = new PenaltyDto
@@ -122,10 +127,13 @@ public class ContractService
                         Amount = nc.Penalty.Amount
                     };
                 }
+
                 oDto.NonCompliances.Add(ncDto);
             }
+
             dto.Obligations.Add(oDto);
         }
+
         return dto;
     }
 
@@ -134,7 +142,9 @@ public class ContractService
         var obligation = await _db.Obligations
             .Include(o => o.Deliverables)
             .FirstOrDefaultAsync(o => o.Id == obligationId, ct);
+
         if (obligation is null) return null;
+
         var deliverable = new Deliverable
         {
             ObligationId = obligation.Id,
@@ -143,6 +153,7 @@ public class ContractService
             Quantity = quantity,
             Unit = unit
         };
+
         obligation.Deliverables.Add(deliverable);
         await _db.SaveChangesAsync(ct);
         return deliverable;
@@ -162,7 +173,9 @@ public class ContractService
         var obligation = await _db.Obligations
             .Include(o => o.NonCompliances)
             .FirstOrDefaultAsync(o => o.Id == obligationId, ct);
+
         if (obligation is null) return null;
+
         var nc = new NonCompliance
         {
             ObligationId = obligation.Id,
@@ -171,6 +184,7 @@ public class ContractService
             Severity = severity,
             RegisteredAt = DateTime.UtcNow
         };
+
         obligation.NonCompliances.Add(nc);
         await _db.SaveChangesAsync(ct);
         return nc;
@@ -181,8 +195,10 @@ public class ContractService
         var nc = await _db.NonCompliances
             .Include(x => x.Penalty)
             .FirstOrDefaultAsync(x => x.Id == nonComplianceId, ct);
+
         if (nc is null) return null;
         if (nc.Penalty != null) throw new InvalidOperationException("Penalty already applied.");
+
         var penalty = new Penalty
         {
             NonComplianceId = nc.Id,
@@ -191,6 +207,7 @@ public class ContractService
             LegalBasis = legalBasis,
             Amount = amount
         };
+
         nc.Penalty = penalty;
         _db.Penalties.Add(penalty);
         await _db.SaveChangesAsync(ct);
@@ -232,10 +249,12 @@ public class ContractService
     public async Task<List<DueDeliverableDto>> GetDueDeliverablesAsync(DateTime? from, DateTime? to, CancellationToken ct)
     {
         var query = _db.Deliverables.AsNoTracking().Where(d => d.DeliveredAt == null);
+
         if (from.HasValue)
             query = query.Where(d => d.ExpectedDate >= from.Value);
         if (to.HasValue)
             query = query.Where(d => d.ExpectedDate <= to.Value);
+
         return await query
             .Select(d => new DueDeliverableDto
             {
@@ -258,10 +277,12 @@ public class ContractService
                 .ThenInclude(o => o.Contract)
                     .ThenInclude(c => c.Supplier)
             .AsQueryable();
+
         if (from.HasValue)
             deliverables = deliverables.Where(d => d.ExpectedDate >= from.Value);
         if (to.HasValue)
             deliverables = deliverables.Where(d => d.ExpectedDate <= to.Value);
+
         return await deliverables
             .GroupBy(d => d.Obligation.Contract.Supplier)
             .Select(g => new DeliveryReportDto
@@ -284,10 +305,12 @@ public class ContractService
                 .ThenInclude(o => o.Contract)
                     .ThenInclude(c => c.OrgUnit)
             .AsQueryable();
+
         if (from.HasValue)
             deliverables = deliverables.Where(d => d.ExpectedDate >= from.Value);
         if (to.HasValue)
             deliverables = deliverables.Where(d => d.ExpectedDate <= to.Value);
+
         return await deliverables
             .GroupBy(d => d.Obligation.Contract.OrgUnit)
             .Select(g => new DeliveryReportDto
@@ -309,10 +332,12 @@ public class ContractService
                 .ThenInclude(nc => nc.Obligation)
                     .ThenInclude(o => o.Contract)
             .AsQueryable();
+
         if (from.HasValue)
             query = query.Where(p => p.NonCompliance.RegisteredAt >= from.Value);
         if (to.HasValue)
             query = query.Where(p => p.NonCompliance.RegisteredAt <= to.Value);
+
         return await query
             .Select(p => new PenaltyReportDto
             {
@@ -334,6 +359,7 @@ public class ContractService
     {
         var d = await _db.Deliverables.AsNoTracking().FirstOrDefaultAsync(x => x.Id == deliverableId, ct);
         if (d is null) return null;
+
         return new DeliverableDto
         {
             Id = d.Id,
