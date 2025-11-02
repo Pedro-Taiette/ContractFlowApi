@@ -1,4 +1,4 @@
-﻿namespace ContractFlowApi.Models.Dtos;
+﻿namespace ContractsMvc.Models.Dtos;
 
 public class FileUploadDto
 {

@@ -13,10 +13,9 @@ builder.Services.AddSwaggerGen();
 
 // Database configuration
 builder.Services.AddDbContext<ContractsDbContext>(opt =>
-    opt.UseSqlServer(builder.Configuration.GetConnectionString("ContractsDb"))
-       .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
+    opt.UseSqlServer(builder.Configuration.GetConnectionString("ContractsDb")));
 
-// Core application services
+// Core services
 builder.Services.AddScoped<ContractService>();
 builder.Services.AddScoped<SupplierService>();
 builder.Services.AddScoped<OrgUnitService>();
@@ -33,10 +32,11 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReact", policy =>
     {
-        policy.AllowAnyOrigin()
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
+        policy
+            .WithOrigins("http://localhost:5173", "http://localhost:3000")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
 
