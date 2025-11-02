@@ -1,10 +1,9 @@
-using ContractFlowApi.Models.Dtos;
-using ContractsMvc.Services;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using ContractsMvc.Models.Dtos;
+using ContractsMvc.Services;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ContractsMvc.Controllers
 {
@@ -28,12 +27,15 @@ namespace ContractsMvc.Controllers
         /// persists metadata. Returns 404 if the contract does not exist.
         /// </summary>
         [HttpPost("contracts/{contractId:guid}/attachments")]
-        public async Task<IActionResult> Upload(Guid id, [FromForm] FileUploadDto request, CancellationToken ct)
+        public async Task<IActionResult> Upload(Guid contractId, [FromForm] FileUploadDto request, CancellationToken ct)
         {
             if (request.File == null)
                 return BadRequest("No file uploaded");
 
-            var result = await _service.CreateAsync(id, request.File, ct);
+            var result = await _service.CreateAsync(contractId, request.File, ct);
+            if (result is null)
+                return NotFound(); 
+
             return Ok(result);
         }
 

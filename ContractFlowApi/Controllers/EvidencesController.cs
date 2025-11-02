@@ -1,11 +1,9 @@
-using ContractFlowApi.Models.Dtos;
-using ContractsMvc.Models.Dtos;
-using ContractsMvc.Services;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using ContractsMvc.Models.Dtos;
+using ContractsMvc.Services;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ContractsMvc.Controllers
 {
@@ -14,7 +12,7 @@ namespace ContractsMvc.Controllers
     /// uploading, listing, downloading and deleting evidence.
     /// </summary>
     [ApiController]
-    [Route("api")] // routes defined per method
+    [Route("api")]
     public class EvidencesController : ControllerBase
     {
         private readonly EvidenceService _service;
@@ -29,32 +27,40 @@ namespace ContractsMvc.Controllers
         /// and optional notes. Returns 404 if the deliverable does not exist.
         /// </summary>
         [HttpPost("deliverables/{deliverableId:guid}/evidences")]
-        public async Task<IActionResult> UploadForDeliverable(Guid deliverableId, [FromForm] FileUploadDto request, [FromForm] string? notes, CancellationToken ct)
+        public async Task<IActionResult> UploadForDeliverable(
+            Guid deliverableId,
+            [FromForm] FileUploadDto request,
+            [FromForm] string? notes,
+            CancellationToken ct)
         {
             if (request.File == null)
                 return BadRequest("No file uploaded");
 
             var dto = await _service.CreateForDeliverableAsync(deliverableId, request.File, notes, ct);
             if (dto == null) return NotFound();
-            return CreatedAtAction(nameof(GetById), new { id = dto.Id }, new { id = dto.Id });
+            return CreatedAtAction(nameof(GetById), new { id = dto.Id }, dto);
         }
 
         /// <summary>
         /// Uploads a piece of evidence for an inspection.
         /// </summary>
         [HttpPost("inspections/{inspectionId:guid}/evidences")]
-        public async Task<IActionResult> UploadForInspection(Guid inspectionId, [FromForm] FileUploadDto request, [FromForm] string? notes, CancellationToken ct)
+        public async Task<IActionResult> UploadForInspection(
+            Guid inspectionId,
+            [FromForm] FileUploadDto request,
+            [FromForm] string? notes,
+            CancellationToken ct)
         {
             if (request.File == null)
                 return BadRequest("No file uploaded");
 
             var dto = await _service.CreateForInspectionAsync(inspectionId, request.File, notes, ct);
             if (dto == null) return NotFound();
-            return CreatedAtAction(nameof(GetById), new { id = dto.Id }, new { id = dto.Id });
+            return CreatedAtAction(nameof(GetById), new { id = dto.Id }, dto);
         }
 
         /// <summary>
-        /// Lists evidence associated with a deliverable.
+        /// Lists evidences for a given deliverable.
         /// </summary>
         [HttpGet("deliverables/{deliverableId:guid}/evidences")]
         public async Task<IActionResult> ListForDeliverable(Guid deliverableId, CancellationToken ct)
@@ -64,7 +70,7 @@ namespace ContractsMvc.Controllers
         }
 
         /// <summary>
-        /// Lists evidence associated with an inspection.
+        /// Lists evidences for a given inspection.
         /// </summary>
         [HttpGet("inspections/{inspectionId:guid}/evidences")]
         public async Task<IActionResult> ListForInspection(Guid inspectionId, CancellationToken ct)
