@@ -29,6 +29,17 @@ builder.Services.AddScoped<AttachmentService>();
 builder.Services.AddSingleton<AlertsHostedService>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<AlertsHostedService>());
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReact", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -46,5 +57,6 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("AllowReact");
 app.MapControllers();
 app.Run();
