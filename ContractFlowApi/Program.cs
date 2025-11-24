@@ -30,13 +30,12 @@ builder.Services.AddHostedService(sp => sp.GetRequiredService<AlertsHostedServic
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowReact", policy =>
+    options.AddPolicy("AllowAll", policy =>
     {
         policy
-            .WithOrigins("http://localhost:5173", "http://localhost:3000")
+            .AllowAnyOrigin()
             .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials();
+            .AllowAnyMethod();
     });
 });
 
@@ -56,7 +55,6 @@ using (var scope = app.Services.CreateScope())
     await SeedData.InitializeAsync(db);
 }
 
-app.UseHttpsRedirection();
-app.UseCors("AllowReact");
+app.UseCors("AllowAll");
 app.MapControllers();
 app.Run();
