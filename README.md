@@ -12,6 +12,20 @@ O backend é construído com:
 
 ## 🚀 Início Rápido
 
+### 0. Rodar tudo com Docker (recomendado para o MVP)
+
+Se não quiser instalar SDKs localmente, basta ter **Docker** e **Docker Compose**. Na raiz do repositório execute:
+
+```bash
+docker compose up --build
+```
+
+O backend sobe na porta `8080` (http://localhost:8080/swagger) e já inclui um SQL Server pronto para uso. Os uploads ficam persistidos no volume nomeado `uploads`.
+
+> A string de conexão e demais variáveis já estão configuradas no `docker-compose.yml`. Ajuste as portas se alguma estiver ocupada.
+
+---
+
 ### 1. Pré-requisitos
 
 Certifique-se de ter instalado:
@@ -180,6 +194,7 @@ ContractFlowApi/
 * Sempre rode `dotnet build` antes de subir código.
 * Use `drop` e `update` com frequência para garantir um banco limpo durante o desenvolvimento.
 * Teste os endpoints sempre pelo Swagger.
+* **CORS liberado**: a API aceita requisições de qualquer origem (útil para o time de frontend testar rapidamente).
 * Em caso de erro, leia o console — geralmente o problema é de migration ou conexão.
 
 ---
